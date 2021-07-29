@@ -1,10 +1,10 @@
 import datetime
-
+from collections import OrderedDict
 import pdfplumber
 from flask import Flask, request
-
 import file
 
+color = '#ffce30'
 pdf_file = file.get_file()
 
 
@@ -14,21 +14,35 @@ def get_menu(when):
         first_page = pdf.pages[0]
         table = first_page.extract_table()
         weekday = datetime.datetime.today().weekday()
-        menu = ''
+        _attachment = list()
 
-        if when in {'breakfast', '아침'}:
-            menu = table[1][2 + weekday]
+        if when in {'breakfast', '아침', '조식'}:
+            _json = OrderedDict()
+            _json['color'] = color
+            _json['author_name'] = table[1][1]
+            _json['text'] = table[1][2 + weekday]
+            _attachment.append(_json)
 
-        elif when in {'lunch', '점심'}:
+        elif when in {'lunch', '점심', '중식'}:
             for r in range(2, 6):
-                menu += '--{}--\n{}\n\n'.format(table[r][1], table[r][2 + weekday])
+                _json = OrderedDict()
+                _json['color'] = color
+                _json['author_name'] = table[r][1].replace('\n', '')
+                _json['text'] = table[r][2 + weekday]
+                _attachment.append(_json)
 
-        elif when in {'dinner', '저녁'}:
+        elif when in {'dinner', '저녁', '석식'}:
+            _json = OrderedDict()
+            _json['color'] = color
+            _json['author_name'] = table[6][1]
+            _text = ''
             for r in range(6, 9):
-                menu += table[r][2 + weekday] + '\n'
+                _text += table[r][2 + weekday] + '\n'
+            _json['text'] = _text
+            _attachment.append(_json)
 
         # print(menu)
-        return menu
+        return _attachment
 
 
 # https://hojak99.tistory.com/554
@@ -41,18 +55,17 @@ app = Flask(__name__)
 def post():
     select = request.form['text']
     menu = get_menu(select)
-    print('menu={}'.format(select))
-    return {
-        'response_type': 'in_channel',
-        'attachments': [
-            {
-                'color': '#36a64f',
-                'pretext': '판교세븐벤처밸리 {}'.format(pdf_file.split('menu/')[1].split('.pdf')[0]),
-                'author_name': select,
-                'text': menu
-            }
-        ]
-    }
+    print('select={}'.format(select))
+
+    _json = OrderedDict()
+    _json['response_type'] = 'in_channel'
+    _json['text'] = '판교세븐벤처밸리 {}월 {}일 {}'.format(
+        datetime.datetime.today().month,
+        datetime.datetime.today().day,
+        select)
+    _json['attachments'] = menu
+
+    return _json
 
 
 if __name__ == '__main__':

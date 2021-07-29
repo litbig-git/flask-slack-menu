@@ -9,23 +9,23 @@ pvv_head = 'http://www.pvv.co.kr/bbs/download.php?bbsMode=fileDown&code=bbs_menu
 pvv_id = 569
 
 
-def is2021(pdf_file):
-    with pdfplumber.open(pdf_file) as pdf:
+def is2021(_pdf_file):
+    with pdfplumber.open(_pdf_file) as pdf:
         return pdf.pages[0].extract_text().count('Take Out') == 1
 
 
-def find_keyword(pdf_file, keyword):
-    with pdfplumber.open(pdf_file) as pdf:
-        return keyword in pdf.pages[0].extract_text()
+def find_keyword(_pdf_file, _keyword):
+    with pdfplumber.open(_pdf_file) as pdf:
+        return _keyword in pdf.pages[0].extract_text()
 
 
-def download_pdf(month, weekday_of_month, init_duplicate):
-    duplicate = init_duplicate
+def download_pdf(_month, _weekday_of_month, _init_duplicate):
+    duplicate = _init_duplicate
 
     while duplicate >= 0:
         pvv_filename_form = [
-            '%02d' % month,
-            '%02d' % weekday_of_month,
+            '%02d' % _month,
+            '%02d' % _weekday_of_month,
             '({})'.format(duplicate) if duplicate != 0 else '',
             '.pdf'
         ]
@@ -66,18 +66,18 @@ def download_pdf(month, weekday_of_month, init_duplicate):
 # http://www.pvv.co.kr/bbs/download.php?bbsMode=fileDown&code=bbs_menu01&id=569&filename=%C6%C7%B1%B307%BF%F904%C1%D6(2).pdf
 
 def download_year():
-    for month in range(3, 13):
-        for weekday in range(1, 7):
-            download_pdf(month, weekday, 15)
+    for _month in range(3, 13):
+        for _weekday in range(1, 7):
+            download_pdf(_month, _weekday, 15)
 
 
 def download_month():
-    for weekday in range(1, 7):
-        download_pdf(datetime.datetime.today().month, weekday, 15)
+    for _weekday in range(1, 7):
+        download_pdf(datetime.datetime.today().month, _weekday, 15)
 
 
-def download_specific(month, weekday):
-    download_pdf(month, weekday, 15)
+def download_specific(_month, _weekday):
+    download_pdf(_month, _weekday, 15)
 
 
 if __name__ == '__main__':

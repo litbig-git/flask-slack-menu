@@ -1,12 +1,11 @@
-import os
 import time
-import downloader
 import schedule
+import downloader
 
 
 def job():
-	downloader.download_month()
-	print("job Done!")
+    downloader.download_month()
+    print("job Done!")
 
 
 # 10초에 한번씩 실행
