@@ -46,6 +46,7 @@ def get_menu(when):
             _json['color'] = color
             _json['author_name'] = '올바른 [when]을 입력해주세요.'
             _json['text'] = 'breakfast, lunch, dinner\n아침, 점심, 저녁\n조식, 중식, 석식'
+            _attachment.append(_json)
 
         # print(menu)
         return _attachment
