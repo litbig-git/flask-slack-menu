@@ -14,17 +14,16 @@ def get_menu(when):
         first_page = pdf.pages[0]
         table = first_page.extract_table()
         weekday = datetime.datetime.today().weekday()
+        menu = ''
 
         if when in {'breakfast', '아침'}:
             menu = table[1][2 + weekday]
 
         elif when in {'lunch', '점심'}:
-            menu = ''
             for r in range(2, 6):
                 menu += '--{}--\n{}\n\n'.format(table[r][1], table[r][2 + weekday])
 
         elif when in {'dinner', '저녁'}:
-            menu = ''
             for r in range(6, 9):
                 menu += table[r][2 + weekday] + '\n'
 
