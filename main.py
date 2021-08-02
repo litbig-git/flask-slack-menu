@@ -1,59 +1,115 @@
 import datetime
 from collections import OrderedDict
-import pdfplumber
 from flask import Flask, request
-import file
+from database import Database
 
-color = '#ffce30'
-pdf_file = file.get_file()
+COLOR = '#ffce30'
+
+
+def is_today(when: str):
+    tomorrow_list = {'today', '오늘'}
+    ret: bool = False
+    for tomorrow in tomorrow_list:
+        if tomorrow in when:
+            ret = True
+            break
+    return ret
+
+
+def subtract_today(when: str):
+    today_list = {'today', '오늘'}
+    ret: str = ''
+    for today in today_list:
+        if today in when:
+            ret = when.replace(today, '').replace(' ', '')
+            break
+    return ret
+
+
+def is_tomorrow(when: str):
+    tomorrow_list = {'tomorrow', '내일'}
+    ret: bool = False
+    for tomorrow in tomorrow_list:
+        if tomorrow in when:
+            ret = True
+            break
+    return ret
+
+
+def subtract_tomorrow(when: str):
+    tomorrow_list = {'tomorrow', '내일'}
+    ret: str = ''
+    for tomorrow in tomorrow_list:
+        if tomorrow in when:
+            ret = when.replace(tomorrow, '').replace(' ', '')
+            break
+    return ret
 
 
 # https://github.com/jsvine/pdfplumber
-def get_menu(when):
-    with pdfplumber.open(pdf_file) as pdf:
-        first_page = pdf.pages[0]
-        table = first_page.extract_table()
-        weekday = datetime.datetime.today().weekday()
-        _attachment = list()
+def get_menu(date, when):
+    database = Database()
+    _attachment = list()
 
-        if when in {'breakfast', '아침', '조식'}:
-            _json = OrderedDict()
-            _json['color'] = color
-            _json['author_name'] = table[1][1]
-            _json['text'] = table[1][2 + weekday]
-            _attachment.append(_json)
+    if when in {'breakfast', '아침', '조식'}:
+        _json = OrderedDict()
+        _json['color'] = COLOR
+        _json['author_name'] = '조식'
+        _json['text'] = database.select(date)[Database.BREAKFAST]
+        _attachment.append(_json)
 
-        elif when in {'lunch', '점심', '중식'}:
-            for r in range(2, 6):
-                _json = OrderedDict()
-                _json['color'] = color
-                _json['author_name'] = table[r][1].replace('\n', '')
-                _json['text'] = table[r][2 + weekday]
-                _attachment.append(_json)
+    elif when in {'lunch', '점심', '중식'}:
+        _json = OrderedDict()
+        _json['color'] = COLOR
+        _json['author_name'] = '중식 A코너'
+        _json['text'] = database.select(date)[Database.LUNCH_A]
+        _attachment.append(_json)
+        _json = OrderedDict()
+        _json['color'] = COLOR
+        _json['author_name'] = '중식 B코너'
+        _json['text'] = database.select(date)[Database.LUNCH_B]
+        _attachment.append(_json)
+        _json = OrderedDict()
+        _json['color'] = COLOR
+        _json['author_name'] = '중식 김치&샐러드'
+        _json['text'] = database.select(date)[Database.LUNCH_SIDE]
+        _attachment.append(_json)
+        _json = OrderedDict()
+        _json['color'] = COLOR
+        _json['author_name'] = '중식 SALAD BOX'
+        _json['text'] = database.select(date)[Database.LUNCH_SALAD]
+        _attachment.append(_json)
 
-        elif when in {'dinner', '저녁', '석식'}:
-            _json = OrderedDict()
-            _json['color'] = color
-            _json['author_name'] = table[6][1]
-            row = len(table)
-            if row == 9:
-                _json['text'] = table[6][2 + weekday]
-            else:
-                _text = ''
-                for r in range(6, 9):
-                    _text += table[r][2 + weekday] + '\n'
-                _json['text'] = _text
-            _attachment.append(_json)
+    elif when in {'dinner', '저녁', '석식'}:
+        _json = OrderedDict()
+        _json['color'] = COLOR
+        _json['author_name'] = '석식'
+        _json['text'] = database.select(date)[Database.DINNER]
+        _attachment.append(_json)
 
-        else:
-            _json = OrderedDict()
-            _json['color'] = color
-            _json['author_name'] = '올바른 [when]을 입력해주세요.'
-            _json['text'] = 'breakfast, lunch, dinner\n아침, 점심, 저녁\n조식, 중식, 석식'
-            _attachment.append(_json)
+    elif when in {'today', '오늘'}:
+        for _menu in get_menu(date, 'breakfast'):
+            _attachment.append(_menu)
+        for _menu in get_menu(date, 'lunch'):
+            _attachment.append(_menu)
+        for _menu in get_menu(date, 'dinner'):
+            _attachment.append(_menu)
 
-        # print(menu)
-        return _attachment
+    else:
+        _json = OrderedDict()
+        _json['color'] = COLOR
+        _json['author_name'] = '올바른 [when]을 입력해주세요.'
+        _json['text'] = 'breakfast, 아침, 조식\n' \
+                        'lunch, 점심, 중식\n' \
+                        'dinner, 저녁, 석식\n' \
+                        'today, 오늘\n' \
+                        'tomorrow, 내일\n' \
+                        'tomorrow breakfast, 내일 아침\n' \
+                        'tomorrow lunch, 내일 점심\n' \
+                        'tomorrow dinner, 내일 저녁'
+        _attachment.append(_json)
+
+    return _attachment
 
 
 # https://hojak99.tistory.com/554
@@ -64,17 +120,38 @@ app = Flask(__name__)
 
 @app.route('/menu', methods=['POST'])
 def post():
-    select = request.form['text']
-    menu = get_menu(select)
-    print('select={}'.format(select))
-    print('form={}'.format(request.form))
+    when: str = ''
+    print('len(form)={}'.format(len(request.form)))
+    print('len(json)={}'.format(len(request.json)))
+    if len(request.form) > 0:
+        print('form')
+        when = request.form['text']
+    elif len(request.json) > 0:
+        print('json')
+        when = request.json['text']
+
+    print('when={}'.format(when))
+
+    date = datetime.datetime.today().strftime("%Y%m%d")
+    if is_tomorrow(when):
+        date = datetime.date.today() + datetime.timedelta(days=1)
+        date = date.strftime("%Y%m%d")
+        if len(subtract_tomorrow(when)) > 0:
+            when = subtract_tomorrow(when)
+        else:
+            when = 'today'
+    elif is_today(when) and len(subtract_today(when)) > 0:
+        when = subtract_today(when)
+
+    print('date={date}, when={when}'.format(date=date, when=when))
+    menu = get_menu(date, when)
 
     _json = OrderedDict()
     _json['response_type'] = 'in_channel'
-    _json['text'] = '판교세븐벤처밸리 {}월 {}일 {}'.format(
-        datetime.datetime.today().month,
-        datetime.datetime.today().day,
-        select)
+    _json['text'] = '판교세븐벤처밸리 {year}년 {month}월 {day}일'.format(
+        year=date[:4],
+        month=date[4:6],
+        day=date[6:])
     _json['attachments'] = menu
 
     return _json

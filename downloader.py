@@ -3,6 +3,7 @@ import os
 import sys
 import pdfplumber
 import requests
+import database
 
 path = './menu'
 pvv_head = 'http://www.pvv.co.kr/bbs/download.php?bbsMode=fileDown&code=bbs_menu01'
@@ -69,15 +70,18 @@ def download_year():
     for _month in range(3, 13):
         for _weekday in range(1, 7):
             download_pdf(_month, _weekday, 15)
+    database.database_update_all()
 
 
 def download_month():
     for _weekday in range(1, 7):
         download_pdf(datetime.datetime.today().month, _weekday, 15)
+    database.database_update_all()
 
 
 def download_specific(_month, _weekday):
     download_pdf(_month, _weekday, 15)
+    database.database_update_all()
 
 
 if __name__ == '__main__':
@@ -93,7 +97,7 @@ if __name__ == '__main__':
         download_year()
 
     elif cmd == 'month':
-        download_year()
+        download_month()
 
     elif cmd == 'specific':
         if len(arg) < 3:

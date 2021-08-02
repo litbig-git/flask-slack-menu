@@ -21,6 +21,7 @@ schedule.every().day.at("07:30").do(job)
 # 매주 수요일 13:15 에 실행
 # schedule.every().wednesday.at("13:15").do(job)
 
+job()
 while True:
     schedule.run_pending()
     time.sleep(1)
