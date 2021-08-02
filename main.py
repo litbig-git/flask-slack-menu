@@ -35,10 +35,14 @@ def get_menu(when):
             _json = OrderedDict()
             _json['color'] = color
             _json['author_name'] = table[6][1]
-            _text = ''
-            for r in range(6, 9):
-                _text += table[r][2 + weekday] + '\n'
-            _json['text'] = _text
+            row = len(table)
+            if row == 9:
+                _json['text'] = table[6][2 + weekday]
+            else:
+                _text = ''
+                for r in range(6, 9):
+                    _text += table[r][2 + weekday] + '\n'
+                _json['text'] = _text
             _attachment.append(_json)
 
         else:
@@ -63,6 +67,7 @@ def post():
     select = request.form['text']
     menu = get_menu(select)
     print('select={}'.format(select))
+    print('form={}'.format(request.form))
 
     _json = OrderedDict()
     _json['response_type'] = 'in_channel'
