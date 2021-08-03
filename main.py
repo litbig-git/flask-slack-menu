@@ -121,16 +121,13 @@ app = Flask(__name__)
 @app.route('/menu', methods=['POST'])
 def post():
     when: str = ''
-    print('len(form)={}'.format(len(request.form)))
-    print('len(json)={}'.format(len(request.json)))
-    if len(request.form) > 0:
-        print('form')
-        when = request.form['text']
-    elif len(request.json) > 0:
-        print('json')
-        when = request.json['text']
 
-    print('when={}'.format(when))
+    if request.form is not None and len(request.form) > 0:
+        print('form={}'.format(request.form))
+        when = request.form['text']
+    elif request.json is not None and len(request.json) > 0:
+        print('json={}'.format(request.json))
+        when = request.json['text']
 
     date = datetime.datetime.today().strftime("%Y%m%d")
     if is_tomorrow(when):
