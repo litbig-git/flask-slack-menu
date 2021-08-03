@@ -28,6 +28,7 @@ class Menu:
 
 # http://hleecaster.com/python-sqlite3/
 class Database:
+    DATE = 0
     BREAKFAST = 1
     LUNCH_A = 2
     LUNCH_B = 3
@@ -90,8 +91,11 @@ class Database:
     def update(self, model: Menu):
         conn = sqlite3.connect(self.db, isolation_level=None)
         c = conn.cursor()
-        c.execute('UPDATE {table} SET breakfast=? WHERE date=?'.format(table=self.table),
-                  (model.breakfast, model.date))
+        c.execute('UPDATE {table} \
+                    SET breakfast=?, lunch_a=?, lunch_b=?, lunch_side=?, lunch_salad=?, dinner=?\
+                    WHERE date=?'.format(table=self.table),
+                  (model.breakfast, model.lunch_a, model.lunch_b, model.lunch_side, model.lunch_salad, model.dinner,
+                   model.date))
         conn.close()
 
     def delete(self, date):
@@ -120,28 +124,68 @@ def list_up_menu():
             first_page = pdf.pages[0]
             table = first_page.extract_table()
 
+            row = len(table)
+            # print('row={}'.format(row))
+
             for weekday in range(0, 5):
                 _menu = Menu()
                 _menu.date = '{year}{month_day}'.format(
                     year='%d' % datetime.datetime.today().year,
-                    month_day=re.sub(r'[^0-9]', '', table[0][2 + weekday])
+                    month_day=re.sub(r'[^0-9]', '', table[Database.DATE][2 + weekday])
                 )
 
-                _menu.breakfast = table[1][2 + weekday]
-                _menu.lunch_a = table[2][2 + weekday]
-                _menu.lunch_b = table[3][2 + weekday]
-                _menu.lunch_side = table[4][2 + weekday]
-                _menu.lunch_salad = table[5][2 + weekday]
+                target = Database.DATE
+                data: str = ''
+                _list = list()
+                _list.append(_menu.date)
+                for r in range(1, row):
+                    value = table[r][2 + weekday]
+                    if value is None or len(value) == 0:
+                        continue
+                    data += value
 
-                row = len(table)
-                # print('row=' + str(row))
-                if row == 9:
-                    _menu.dinner = table[6][2 + weekday]
+                    a = table[r][0].replace('\n', '').replace(' ', '').upper() if table[r][0] is not None else ''
+                    b = table[r][1].replace('\n', '').replace(' ', '').upper() if table[r][1] is not None else ''
+                    if a == '조식' or b == '한식':
+                        target += 1
+                        _list.append(data)
+                        data = ''
+                    elif a == '중식' or b == 'A코너':
+                        target += 1
+                        _list.append(data)
+                        data = ''
+                    elif a == '중식' or b == 'B코너':
+                        target += 1
+                        _list.append(data)
+                        data = ''
+                    elif b in {'김치&샐러드', 'SALADBAR', '플러스코너'}:
+                        target += 1
+                        _list.append(data)
+                        data = ''
+                    elif a == '중식' or b == 'SALADBOX':
+                        target += 1
+                        _list.append(data)
+                        data = ''
+                    elif a == '석식':
+                        target += 1
+                        _list.append(data)
+                        data = ''
+
+                if len(_list) != 7:
+                    _menu.breakfast = \
+                        _menu.lunch_a = \
+                        _menu.lunch_b = \
+                        _menu.lunch_side = \
+                        _menu.lunch_salad = \
+                        _menu.dinner = '없음'
                 else:
-                    for r in range(6, 7):
-                        _menu.dinner += str(table[r][2 + weekday])
+                    _menu.breakfast = _list[Database.BREAKFAST]
+                    _menu.lunch_a = _list[Database.LUNCH_A]
+                    _menu.lunch_b = _list[Database.LUNCH_B]
+                    _menu.lunch_side = _list[Database.LUNCH_SIDE]
+                    _menu.lunch_salad = _list[Database.LUNCH_SALAD]
+                    _menu.dinner = _list[Database.DINNER]
 
-                # print('----date=' + str(_menu.date))
                 _menu_list.append(_menu)
 
     return _menu_list
@@ -175,6 +219,9 @@ if __name__ == '__main__':
 
     elif cmd == 'today':
         print(database.select(datetime.datetime.today().strftime('%Y%m%d')))
+
+    elif cmd == 'select' and len(arg) >= 2:
+        print(database.select(str(arg[1])))
 
     elif cmd == 'all':
         print(database.select_all())
