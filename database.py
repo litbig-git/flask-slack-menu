@@ -170,9 +170,9 @@ def list_up_menu():
                         target += 1
                         _list.append(data)
                         data = ''
+                # print(_list)
                 # 10월04주부터 salad box 사라짐.
                 if len(_list) == 6:
-                    print(_list)
                     _menu.breakfast = _list[Database.BREAKFAST]
                     _menu.lunch_a = _list[Database.LUNCH_A]
                     _menu.lunch_b = _list[Database.LUNCH_B]
