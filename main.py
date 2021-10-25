@@ -2,6 +2,7 @@ import datetime
 from collections import OrderedDict
 from flask import Flask, request
 from database import Database
+import time
 
 COLOR = '#ffce30'
 
@@ -111,6 +112,18 @@ def get_menu(date, when):
 
     return _attachment
 
+def logging(msg):
+    with open("log.txt", "a+") as file_object:
+        # Move read cursor to the start of file.
+        file_object.seek(0)
+        # If file is not empty then append '\n'
+        data = file_object.read(100)
+        if len(data) > 0:
+            file_object.write("\n")
+        # Append text at the end of file
+        date = time.strftime('[%Y-%m-%d %H:%M:%S]', time.localtime())
+        file_object.write('{date} {msg}'.format(date=date, msg=msg))
+
 
 # https://hojak99.tistory.com/554
 # https://cholol.tistory.com/421
@@ -124,9 +137,11 @@ def post():
 
     if request.form is not None and len(request.form) > 0:
         print('form={}'.format(request.form))
+        logging('form={}'.format(request.form))
         when = request.form['text']
     elif request.json is not None and len(request.json) > 0:
         print('json={}'.format(request.json))
+        logging('json={}'.format(request.json))
         when = request.json['text']
 
     date = datetime.datetime.today().strftime("%Y%m%d")
