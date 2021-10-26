@@ -84,10 +84,18 @@ class Database:
         conn = sqlite3.connect(self.db, isolation_level=None)
         c = conn.cursor()
         c.execute('SELECT * FROM {table} WHERE date=?'.format(table=self.table), (date,))
-        ret = c.fetchone()
+        db = c.fetchone()
         conn.close()
         # if ret is None:
         #     ret = '없음'
+        ret = dict()
+        ret[Database.DATE] = db[DBIndex.DATE]
+        ret[Database.BREAKFAST] = db[DBIndex.BREAKFAST]
+        ret[Database.LUNCH_A] = db[DBIndex.LUNCH_A]
+        ret[Database.LUNCH_B] = db[DBIndex.LUNCH_B]
+        ret[Database.LUNCH_SIDE] = db[DBIndex.LUNCH_SIDE]
+        ret[Database.LUNCH_SALAD] = db[DBIndex.LUNCH_SALAD]
+        ret[Database.DINNER] = db[DBIndex.DINNER]
         return ret
 
     def select_all(self):
