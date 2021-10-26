@@ -1,7 +1,7 @@
 import datetime
 from collections import OrderedDict
 from flask import Flask, request
-from database import Database
+from database import Database, DBIndex
 import time
 
 COLOR = '#ffce30'
@@ -56,36 +56,36 @@ def get_menu(date, when):
         _json = OrderedDict()
         _json['color'] = COLOR
         _json['author_name'] = '조식'
-        _json['text'] = database.select(date)[Database.BREAKFAST]
+        _json['text'] = database.select(date)[DBIndex.BREAKFAST]
         _attachment.append(_json)
 
     elif when in {'lunch', '점심', '중식'}:
         _json = OrderedDict()
         _json['color'] = COLOR
         _json['author_name'] = '중식 A코너'
-        _json['text'] = database.select(date)[Database.LUNCH_A]
+        _json['text'] = database.select(date)[DBIndex.LUNCH_A]
         _attachment.append(_json)
         _json = OrderedDict()
         _json['color'] = COLOR
         _json['author_name'] = '중식 B코너'
-        _json['text'] = database.select(date)[Database.LUNCH_B]
+        _json['text'] = database.select(date)[DBIndex.LUNCH_B]
         _attachment.append(_json)
         _json = OrderedDict()
         _json['color'] = COLOR
         _json['author_name'] = '중식 김치&샐러드'
-        _json['text'] = database.select(date)[Database.LUNCH_SIDE]
+        _json['text'] = database.select(date)[DBIndex.LUNCH_SIDE]
         _attachment.append(_json)
         _json = OrderedDict()
         _json['color'] = COLOR
         _json['author_name'] = '중식 SALAD BOX'
-        _json['text'] = database.select(date)[Database.LUNCH_SALAD]
+        _json['text'] = database.select(date)[DBIndex.LUNCH_SALAD]
         _attachment.append(_json)
 
     elif when in {'dinner', '저녁', '석식'}:
         _json = OrderedDict()
         _json['color'] = COLOR
         _json['author_name'] = '석식'
-        _json['text'] = database.select(date)[Database.DINNER]
+        _json['text'] = database.select(date)[DBIndex.DINNER]
         _attachment.append(_json)
 
     elif when in {'today', '오늘'}:

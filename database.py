@@ -7,6 +7,16 @@ import sys
 import pdfplumber
 
 
+class DBIndex:
+    DATE = 0
+    BREAKFAST = 1
+    LUNCH_A = 2
+    LUNCH_B = 3
+    LUNCH_SIDE = 4
+    LUNCH_SALAD = 5
+    DINNER = 6
+
+
 class Menu:
     date: str
     breakfast: str
