@@ -28,13 +28,13 @@ class Menu:
 
 # http://hleecaster.com/python-sqlite3/
 class Database:
-    DATE = 0
-    BREAKFAST = 1
-    LUNCH_A = 2
-    LUNCH_B = 3
-    LUNCH_SIDE = 4
-    LUNCH_SALAD = 5
-    DINNER = 6
+    DATE = 'date'
+    BREAKFAST = 'breakfast'
+    LUNCH_A = 'lunch_a'
+    LUNCH_B = 'lunch_b'
+    LUNCH_SIDE = 'lunch_side'
+    LUNCH_SALAD = 'lunch_salad'
+    DINNER = 'dinner'
 
     db = 'menu.db'
     table = 'table1'
@@ -131,45 +131,31 @@ def list_up_menu():
                 _menu = Menu()
                 _menu.date = '{year}{month_day}'.format(
                     year='%d' % datetime.datetime.today().year,
-                    month_day=re.sub(r'[^0-9]', '', table[Database.DATE][2 + weekday])
+                    month_day=re.sub(r'[^0-9]', '', table[0][2 + weekday])
                 )
 
-                target = Database.DATE
-                data: str = ''
-                _list = list()
-                _list.append(_menu.date)
+                _list = dict()
+                _list[Database.DATE] = _menu.date
                 for r in range(1, row):
                     value = table[r][2 + weekday]
                     if value is None or len(value) == 0:
                         continue
-                    data += value
 
                     a = table[r][0].replace('\n', '').replace(' ', '').upper() if table[r][0] is not None else ''
                     b = table[r][1].replace('\n', '').replace(' ', '').upper() if table[r][1] is not None else ''
                     if a == '조식' or b == '한식':
-                        target += 1
-                        _list.append(data)
-                        data = ''
+                        _list[Database.BREAKFAST] = value
                     elif a == '중식' or b == 'A코너':
-                        target += 1
-                        _list.append(data)
-                        data = ''
+                        _list[Database.LUNCH_A] = value
                     elif a == '중식' or b == 'B코너':
-                        target += 1
-                        _list.append(data)
-                        data = ''
+                        _list[Database.LUNCH_B] = value
                     elif b in {'김치&샐러드', 'SALADBAR', '플러스코너'}:
-                        target += 1
-                        _list.append(data)
-                        data = ''
+                        _list[Database.LUNCH_SIDE] = value
                     elif a == '중식' or b == 'SALADBOX':
-                        target += 1
-                        _list.append(data)
-                        data = ''
+                        _list[Database.LUNCH_SALAD] = value
                     elif a == '석식':
-                        target += 1
-                        _list.append(data)
-                        data = ''
+                        _list[Database.DINNER] = value
+
                 # print(_list)
                 # 10월04주부터 salad box 사라짐.
                 if len(_list) == 6:
@@ -178,7 +164,7 @@ def list_up_menu():
                     _menu.lunch_b = _list[Database.LUNCH_B]
                     _menu.lunch_side = _list[Database.LUNCH_SIDE]
                     _menu.lunch_salad = '없음'
-                    _menu.dinner = _list[Database.DINNER - 1]
+                    _menu.dinner = _list[Database.DINNER]
                 elif len(_list) != 7:
                     _menu.breakfast = \
                         _menu.lunch_a = \
