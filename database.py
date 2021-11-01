@@ -85,7 +85,7 @@ class Database:
         c = conn.cursor()
         c.execute('SELECT * FROM {table} WHERE date=?'.format(table=self.table), (date,))
         db = c.fetchone()
-        print('db={}'.format(db))
+        # print('db={}'.format(db))
         conn.close()
         if db is None:
             return db
@@ -163,11 +163,12 @@ def list_up_menu():
 
                     a = table[r][0].replace('\n', '').replace(' ', '').upper() if table[r][0] is not None else ''
                     b = table[r][1].replace('\n', '').replace(' ', '').upper() if table[r][1] is not None else ''
+                    # print('a={}, b={}'.format(a, b))
                     if a == '조식' or b == '한식':
                         _list[Database.BREAKFAST] = value
-                    elif a == '중식' or b == 'A코너':
+                    elif b == 'A코너':
                         _list[Database.LUNCH_A] = value
-                    elif a == '중식' or b == 'B코너':
+                    elif b == 'B코너':
                         _list[Database.LUNCH_B] = value
                     elif b in {'김치&샐러드', 'SALADBAR', '플러스코너'}:
                         _list[Database.LUNCH_SIDE] = value
@@ -176,29 +177,15 @@ def list_up_menu():
                     elif a == '석식':
                         _list[Database.DINNER] = value
 
-                # print(_list)
-                # 10월04주부터 salad box 사라짐.
-                if len(_list) == 6:
-                    _menu.breakfast = _list[Database.BREAKFAST]
-                    _menu.lunch_a = _list[Database.LUNCH_A]
-                    _menu.lunch_b = _list[Database.LUNCH_B]
-                    _menu.lunch_side = _list[Database.LUNCH_SIDE]
-                    _menu.lunch_salad = '없음'
-                    _menu.dinner = _list[Database.DINNER]
-                elif len(_list) != 7:
-                    _menu.breakfast = \
-                        _menu.lunch_a = \
-                        _menu.lunch_b = \
-                        _menu.lunch_side = \
-                        _menu.lunch_salad = \
-                        _menu.dinner = '없음'
-                else:
-                    _menu.breakfast = _list[Database.BREAKFAST]
-                    _menu.lunch_a = _list[Database.LUNCH_A]
-                    _menu.lunch_b = _list[Database.LUNCH_B]
-                    _menu.lunch_side = _list[Database.LUNCH_SIDE]
-                    _menu.lunch_salad = _list[Database.LUNCH_SALAD]
-                    _menu.dinner = _list[Database.DINNER]
+                # print('_list={}'.format(_list))
+                # print('len(_list)={}'.format(len(_list)))
+
+                _menu.breakfast = _list[Database.BREAKFAST] if Database.BREAKFAST in _list.keys() else '없음'
+                _menu.lunch_a = _list[Database.LUNCH_A] if Database.LUNCH_A in _list.keys() else '없음'
+                _menu.lunch_b = _list[Database.LUNCH_B] if Database.LUNCH_B in _list.keys() else '없음'
+                _menu.lunch_side = _list[Database.LUNCH_SIDE] if Database.LUNCH_SIDE in _list.keys() else '없음'
+                _menu.lunch_salad = _list[Database.LUNCH_SALAD] if Database.LUNCH_SALAD in _list.keys() else '없음'
+                _menu.dinner = _list[Database.DINNER] if Database.DINNER in _list.keys() else '없음'
 
                 _menu_list.append(_menu)
 
