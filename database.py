@@ -85,9 +85,11 @@ class Database:
         c = conn.cursor()
         c.execute('SELECT * FROM {table} WHERE date=?'.format(table=self.table), (date,))
         db = c.fetchone()
+        print('db={}'.format(db))
         conn.close()
-        # if ret is None:
-        #     ret = '없음'
+        if db is None:
+            return db
+        # print('date={}'.format(db[DBIndex.DATE]))
         ret = dict()
         ret[Database.DATE] = db[DBIndex.DATE]
         ret[Database.BREAKFAST] = db[DBIndex.BREAKFAST]
