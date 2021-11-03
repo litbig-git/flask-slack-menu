@@ -1,6 +1,7 @@
 import datetime
 import os
 import sys
+from pathlib import Path
 import pdfplumber
 import requests
 import database
@@ -11,8 +12,14 @@ pvv_id = 569
 
 
 def is2021(_pdf_file):
-    with pdfplumber.open(_pdf_file) as pdf:
-        return pdf.pages[0].extract_text().count('Take Out') == 1
+    try:
+        with pdfplumber.open(_pdf_file) as pdf:
+            if len(pdf.pages) < 1:
+                return False
+            return pdf.pages[0].extract_text().count('Take Out') == 1
+    except:
+        print('open fail {}'.format(_pdf_file))
+        return False
 
 
 def find_keyword(_pdf_file, _keyword):
@@ -21,6 +28,8 @@ def find_keyword(_pdf_file, _keyword):
 
 
 def download_pdf(_month, _weekday_of_month, _init_duplicate):
+    Path(path).mkdir(parents=True, exist_ok=True)
+
     duplicate = _init_duplicate
 
     while duplicate >= 0:
@@ -52,9 +61,12 @@ def download_pdf(_month, _weekday_of_month, _init_duplicate):
         pdf_file = open(pdf_file_path, 'wb')
         pdf_file.write(r.content)
 
-        if os.path.getsize(pdf_file_path) < 1000 \
-                or is2021(pdf_file_path) is False:
-            os.remove(pdf_file_path)
+        if os.path.exists(pdf_file_path) and Path(pdf_file_path).is_file() and \
+                (os.path.getsize(pdf_file_path) < 1000 or is2021(pdf_file_path) is False):
+            try:
+                os.remove(pdf_file_path)
+            except FileNotFoundError:
+                print('FileNotFoundError {}'.format(pdf_file_path))
 
         if os.path.exists(pdf_file_path):
             print('new pdf file = {}'.format(pdf_file_path))
@@ -67,21 +79,24 @@ def download_pdf(_month, _weekday_of_month, _init_duplicate):
 # http://www.pvv.co.kr/bbs/download.php?bbsMode=fileDown&code=bbs_menu01&id=569&filename=%C6%C7%B1%B307%BF%F904%C1%D6(2).pdf
 
 def download_year():
-    for _month in range(3, 13):
+    for _month in range(1, 13):
         for _weekday in range(1, 7):
             download_pdf(_month, _weekday, 15)
     database.database_update_all()
+    print('download_year()')
 
 
 def download_month():
     for _weekday in range(1, 7):
         download_pdf(datetime.datetime.today().month, _weekday, 15)
     database.database_update_all()
+    print('download_month()')
 
 
 def download_specific(_month, _weekday):
     download_pdf(_month, _weekday, 15)
     database.database_update_all()
+    print('download_specific({month}, {weekday})'.format(month=_month, weekday=_weekday))
 
 
 if __name__ == '__main__':
@@ -92,6 +107,7 @@ if __name__ == '__main__':
         exit(-1)
 
     cmd = arg[0]
+    print('cmd={}'.format(cmd))
 
     if cmd == 'year':
         download_year()
