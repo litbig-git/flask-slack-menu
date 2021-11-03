@@ -133,7 +133,7 @@ def logging(msg):
 def work():
     schedule.every().day.at("07:30").do(downloader.download_month)
 
-    downloader.download_year()
+    downloader.download_month()
     while True:
         schedule.run_pending()
         time.sleep(1)
