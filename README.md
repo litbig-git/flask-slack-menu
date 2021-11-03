@@ -14,7 +14,7 @@
 
 - python 3.3이상
 
-###가상환경 생성
+### 가상환경 생성
 
     python -m venv venv
     
