@@ -91,13 +91,13 @@ class Database:
             return db
         # print('date={}'.format(db[DBIndex.DATE]))
         ret = dict()
-        ret[Database.DATE] = db[DBIndex.DATE]
-        ret[Database.BREAKFAST] = db[DBIndex.BREAKFAST]
-        ret[Database.LUNCH_A] = db[DBIndex.LUNCH_A]
-        ret[Database.LUNCH_B] = db[DBIndex.LUNCH_B]
-        ret[Database.LUNCH_SIDE] = db[DBIndex.LUNCH_SIDE]
-        ret[Database.LUNCH_SALAD] = db[DBIndex.LUNCH_SALAD]
-        ret[Database.DINNER] = db[DBIndex.DINNER]
+        ret[self.DATE] = db[DBIndex.DATE]
+        ret[self.BREAKFAST] = db[DBIndex.BREAKFAST]
+        ret[self.LUNCH_A] = db[DBIndex.LUNCH_A]
+        ret[self.LUNCH_B] = db[DBIndex.LUNCH_B]
+        ret[self.LUNCH_SIDE] = db[DBIndex.LUNCH_SIDE]
+        ret[self.LUNCH_SALAD] = db[DBIndex.LUNCH_SALAD]
+        ret[self.DINNER] = db[DBIndex.DINNER]
         return ret
 
     def select_all(self):
@@ -126,9 +126,14 @@ class Database:
 
     def delete_all(self):
         conn = sqlite3.connect(self.db, isolation_level=None)
-        ret = conn.execute("DELETE FROM table1").rowcount
+        ret = conn.execute('DELETE FROM table1').rowcount
         conn.close()
         return ret
+
+    def order(self):
+        conn = sqlite3.connect(self.db, isolation_level=None)
+        conn.execute('SELECT * FROM {table} ORDER BY {primary_key}'.format(table=self.table, primary_key=self.DATE))
+        conn.close()
 
 
 def list_up_menu():
@@ -199,6 +204,7 @@ def database_update_all():
             __database.update(_menu)
         else:
             __database.insert(_menu)
+    __database.order()
 
 
 if __name__ == '__main__':
@@ -226,3 +232,6 @@ if __name__ == '__main__':
 
     elif cmd == 'all':
         print(database.select_all())
+
+    elif cmd == 'order':
+        database.order()
