@@ -1,6 +1,9 @@
 import datetime
+import threading
 from collections import OrderedDict
+import schedule
 from flask import Flask, request
+import downloader
 from database import Database
 import time
 
@@ -113,6 +116,7 @@ def get_menu(date, when):
 
     return _attachment
 
+
 def logging(msg):
     with open("log.txt", "a+") as file_object:
         # Move read cursor to the start of file.
@@ -126,10 +130,29 @@ def logging(msg):
         file_object.write('{date} {msg}'.format(date=date, msg=msg))
 
 
+def work():
+    schedule.every().day.at("07:30").do(downloader.download_month)
+
+    downloader.download_year()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+class MyFlaskApp(Flask):
+    def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
+        if not self.debug:
+            with self.app_context():
+                thread = threading.Thread(target=work)
+                thread.daemon = True
+                thread.start()
+        super(MyFlaskApp, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
+
+
 # https://hojak99.tistory.com/554
 # https://cholol.tistory.com/421
 # https://justkode.kr/python/flask-restapi-1
-app = Flask(__name__)
+app = MyFlaskApp(__name__)
 
 
 @app.route('/menu', methods=['POST'])
