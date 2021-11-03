@@ -10,6 +10,30 @@
 <img src="https://github.com/alsrb968/slack_menu_bot/blob/master/img/img3.png" width="30%" height="30%" title="저녁" alt="저녁"/>
 </p>
 
+## flask 실행하기
+
+- python 3.3이상
+
+###가상환경 생성
+
+    python -m venv venv
+    
+#### Mac OS
+
+    source venv/bin/activate
+
+#### Windows OS
+
+    venv\Scripts\activate.bat
+
+### python package 설치
+
+    pip install -r requirements.txt
+
+### main.py 실행
+
+    python main.py
+
 ## 참고
 
 ### PDF Read
