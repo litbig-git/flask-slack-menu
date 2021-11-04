@@ -1,42 +1,12 @@
+import datetime
 import os
 import re
-import sqlite3
-import datetime
 import sys
 
 import pdfplumber
+import pymysql
 
 
-class DBIndex:
-    DATE = 0
-    BREAKFAST = 1
-    LUNCH_A = 2
-    LUNCH_B = 3
-    LUNCH_SIDE = 4
-    LUNCH_SALAD = 5
-    DINNER = 6
-
-
-class Menu:
-    date: str
-    breakfast: str
-    lunch_a: str
-    lunch_b: str
-    lunch_side: str
-    lunch_salad: str
-    dinner: str
-
-    def __init__(self):
-        self.date = ''
-        self.breakfast = ''
-        self.lunch_a = ''
-        self.lunch_b = ''
-        self.lunch_side = ''
-        self.lunch_salad = ''
-        self.dinner = ''
-
-
-# http://hleecaster.com/python-sqlite3/
 class Database:
     DATE = 'date'
     BREAKFAST = 'breakfast'
@@ -46,94 +16,109 @@ class Database:
     LUNCH_SALAD = 'lunch_salad'
     DINNER = 'dinner'
 
-    db = 'menu.db'
-    table = 'table1'
+    key_list = {DATE, BREAKFAST, LUNCH_A, LUNCH_B, LUNCH_SIDE, LUNCH_SALAD, DINNER}
+
+    USER = os.environ['RDS_USER']
+    PASSWD = os.environ['RDS_PASSWD']
+    HOST = 'database-menu-instance-1.chypan0rbkuk.ap-northeast-2.rds.amazonaws.com'
+    PORT = 3306
+    CHARSET = 'utf8'
+    DB = 'menu'
+    TABLE = 'table_menu'
 
     def __init__(self):
         self.create()
 
     def create(self):
-        conn = sqlite3.connect(self.db, isolation_level=None)
-        c = conn.cursor()
-        c.execute('CREATE TABLE IF NOT EXISTS {table} \
-            (date text PRIMARY KEY, \
-            breakfast text, \
-            lunch_a text, \
-            lunch_b text, \
-            lunch_side text, \
-            lunch_salad text, \
-            dinner text)'.format(table=self.table))
-        conn.close()
+        with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = '''
+                CREATE TABLE IF NOT EXISTS {table} (
+                date DATE PRIMARY KEY,
+                breakfast TEXT(500),
+                lunch_a TEXT(500),
+                lunch_b TEXT(500),
+                lunch_side TEXT(500),
+                lunch_salad TEXT(500),
+                dinner TEXT(500))
+                '''.format(table=self.TABLE)
+                cursor.execute(sql)
 
-    def insert(self, model: Menu):
-        conn = sqlite3.connect(self.db, isolation_level=None)
-        c = conn.cursor()
-        c.execute('INSERT INTO {table}(date, breakfast, lunch_a, lunch_b, lunch_side, lunch_salad, dinner) \
-                  VALUES(?,?,?,?,?,?,?)'.format(table=self.table), \
-                  (model.date,
-                   model.breakfast,
-                   model.lunch_a,
-                   model.lunch_b,
-                   model.lunch_side,
-                   model.lunch_salad,
-                   model.dinner))
-        conn.close()
-
-    def select(self, date):
+    def select(self, date: str):
         # print('date=' + date)
-        conn = sqlite3.connect(self.db, isolation_level=None)
-        c = conn.cursor()
-        c.execute('SELECT * FROM {table} WHERE date=?'.format(table=self.table), (date,))
-        db = c.fetchone()
-        # print('db={}'.format(db))
-        conn.close()
-        if db is None:
-            return db
-        # print('date={}'.format(db[DBIndex.DATE]))
-        ret = dict()
-        ret[self.DATE] = db[DBIndex.DATE]
-        ret[self.BREAKFAST] = db[DBIndex.BREAKFAST]
-        ret[self.LUNCH_A] = db[DBIndex.LUNCH_A]
-        ret[self.LUNCH_B] = db[DBIndex.LUNCH_B]
-        ret[self.LUNCH_SIDE] = db[DBIndex.LUNCH_SIDE]
-        ret[self.LUNCH_SALAD] = db[DBIndex.LUNCH_SALAD]
-        ret[self.DINNER] = db[DBIndex.DINNER]
-        return ret
+        with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = '''
+                SELECT * FROM {table} WHERE date=%s
+                '''.format(table=self.TABLE)
+                cursor.execute(sql, date)
+                ret = cursor.fetchone()
+                print('select={}'.format(ret))
+                return ret
 
     def select_all(self):
-        conn = sqlite3.connect(self.db, isolation_level=None)
-        c = conn.cursor()
-        c.execute('SELECT * FROM {table}'.format(table=self.table))
-        ret = c.fetchall()
-        conn.close()
-        return ret
+        with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = '''
+                SELECT * FROM {table}
+                '''.format(table=self.TABLE)
+                cursor.execute(sql)
+                ret = cursor.fetchall()
+                print('select={}'.format(ret))
+                return ret
 
-    def update(self, model: Menu):
-        conn = sqlite3.connect(self.db, isolation_level=None)
-        c = conn.cursor()
-        c.execute('UPDATE {table} \
-                    SET breakfast=?, lunch_a=?, lunch_b=?, lunch_side=?, lunch_salad=?, dinner=?\
-                    WHERE date=?'.format(table=self.table),
-                  (model.breakfast, model.lunch_a, model.lunch_b, model.lunch_side, model.lunch_salad, model.dinner,
-                   model.date))
-        conn.close()
+    def insert(self, model: dict):
+        with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = '''
+                INSERT INTO {table}(date, breakfast, lunch_a, lunch_b, lunch_side, lunch_salad, dinner) 
+                VALUES(%s,%s,%s,%s,%s,%s,%s)
+                '''.format(table=self.TABLE)
+                cursor.execute(sql, (model[self.DATE],
+                                     model[self.BREAKFAST],
+                                     model[self.LUNCH_A],
+                                     model[self.LUNCH_B],
+                                     model[self.LUNCH_SIDE],
+                                     model[self.LUNCH_SALAD],
+                                     model[self.DINNER]))
+                conn.commit()
 
-    def delete(self, date):
-        conn = sqlite3.connect(self.db, isolation_level=None)
-        c = conn.cursor()
-        c.execute('DELETE FROM {table} WHERE date=?'.format(table=self.table), (date,))
-        conn.close()
+    def update(self, model: dict):
+        with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = '''
+                UPDATE {table} 
+                SET breakfast=%s, lunch_a=%s, lunch_b=%s, lunch_side=%s, lunch_salad=%s, dinner=%s 
+                WHERE date=%s'''.format(table=self.TABLE)
+                cursor.execute(sql, (model[self.BREAKFAST],
+                                     model[self.LUNCH_A],
+                                     model[self.LUNCH_B],
+                                     model[self.LUNCH_SIDE],
+                                     model[self.LUNCH_SALAD],
+                                     model[self.DINNER],
+                                     model[self.DATE]))
+                conn.commit()
+
+    def delete(self, date: str):
+        with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = '''
+                DELETE FROM {table} WHERE date=%s
+                '''.format(table=self.TABLE)
+                cursor.execute(sql, (date,))
+                conn.commit()
 
     def delete_all(self):
-        conn = sqlite3.connect(self.db, isolation_level=None)
-        ret = conn.execute('DELETE FROM table1').rowcount
-        conn.close()
-        return ret
+        with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                sql = '''
+                TRUNCATE {table}
+                '''.format(table=self.TABLE)
+                cursor.execute(sql)
 
     def order(self):
-        conn = sqlite3.connect(self.db, isolation_level=None)
-        conn.execute('SELECT * FROM {table} ORDER BY {primary_key}'.format(table=self.table, primary_key=self.DATE))
-        conn.close()
+        with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
+            conn.execute('SELECT * FROM {table} ORDER BY {primary_key}'.format(table=self.TABLE, primary_key=self.DATE))
 
 
 def list_up_menu():
@@ -153,14 +138,11 @@ def list_up_menu():
             # print('row={}'.format(row))
 
             for weekday in range(0, 5):
-                _menu = Menu()
-                _menu.date = '{year}{month_day}'.format(
+                _menu = dict()
+                _menu[Database.DATE] = '{year}{month_day}'.format(
                     year='%d' % datetime.datetime.today().year,
                     month_day=re.sub(r'[^0-9]', '', table[0][2 + weekday])
                 )
-
-                _list = dict()
-                _list[Database.DATE] = _menu.date
                 for r in range(1, row):
                     value = table[r][2 + weekday]
                     if value is None or len(value) == 0:
@@ -170,27 +152,20 @@ def list_up_menu():
                     b = table[r][1].replace('\n', '').replace(' ', '').upper() if table[r][1] is not None else ''
                     # print('a={}, b={}'.format(a, b))
                     if a == '조식' or b == '한식':
-                        _list[Database.BREAKFAST] = value
+                        _menu[Database.BREAKFAST] = value
                     elif b == 'A코너':
-                        _list[Database.LUNCH_A] = value
+                        _menu[Database.LUNCH_A] = value
                     elif b == 'B코너':
-                        _list[Database.LUNCH_B] = value
+                        _menu[Database.LUNCH_B] = value
                     elif b in {'김치&샐러드', 'SALADBAR', '플러스코너'}:
-                        _list[Database.LUNCH_SIDE] = value
+                        _menu[Database.LUNCH_SIDE] = value
                     elif a == '중식' or b == 'SALADBOX':
-                        _list[Database.LUNCH_SALAD] = value
+                        _menu[Database.LUNCH_SALAD] = value
                     elif a == '석식':
-                        _list[Database.DINNER] = value
+                        _menu[Database.DINNER] = value
 
-                # print('_list={}'.format(_list))
-                # print('len(_list)={}'.format(len(_list)))
-
-                _menu.breakfast = _list[Database.BREAKFAST] if Database.BREAKFAST in _list.keys() else '없음'
-                _menu.lunch_a = _list[Database.LUNCH_A] if Database.LUNCH_A in _list.keys() else '없음'
-                _menu.lunch_b = _list[Database.LUNCH_B] if Database.LUNCH_B in _list.keys() else '없음'
-                _menu.lunch_side = _list[Database.LUNCH_SIDE] if Database.LUNCH_SIDE in _list.keys() else '없음'
-                _menu.lunch_salad = _list[Database.LUNCH_SALAD] if Database.LUNCH_SALAD in _list.keys() else '없음'
-                _menu.dinner = _list[Database.DINNER] if Database.DINNER in _list.keys() else '없음'
+                # print('_menu={}'.format(_menu))
+                # print('len(_menu)={}'.format(len(_menu)))
 
                 _menu_list.append(_menu)
 
@@ -198,13 +173,10 @@ def list_up_menu():
 
 
 def database_update_all():
-    __database = Database()
+    db = Database()
     for _menu in list_up_menu():
-        if __database.select(_menu.date):
-            __database.update(_menu)
-        else:
-            __database.insert(_menu)
-    __database.order()
+        db.update(_menu) if db.select(_menu[Database.DATE]) else db.insert(_menu)
+    db.order()
 
 
 if __name__ == '__main__':
@@ -215,23 +187,22 @@ if __name__ == '__main__':
         exit(-1)
 
     cmd = arg[0]
-
-    database = Database()
+    db = Database()
 
     if cmd == 'clear':
-        database.delete_all()
+        db.delete_all()
 
     elif cmd == 'update':
         database_update_all()
 
     elif cmd == 'today':
-        print(database.select(datetime.datetime.today().strftime('%Y%m%d')))
+        print(db.select(datetime.datetime.today().strftime('%Y%m%d')))
 
     elif cmd == 'select' and len(arg) >= 2:
-        print(database.select(str(arg[1])))
+        print(db.select(str(arg[1])))
 
     elif cmd == 'all':
-        print(database.select_all())
+        print(db.select_all())
 
     elif cmd == 'order':
-        database.order()
+        db.order()

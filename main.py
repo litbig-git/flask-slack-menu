@@ -4,6 +4,7 @@ from collections import OrderedDict
 import schedule
 from flask import Flask, request
 import downloader
+import usage
 from database import Database
 import time
 
@@ -53,10 +54,10 @@ def subtract_tomorrow(when: str):
 # https://github.com/jsvine/pdfplumber
 def get_menu(date, when):
     database = Database()
-    data = database.select(date)
     _attachment = list()
 
     if when in {'breakfast', '아침', '조식'}:
+        data = database.select(date)
         _json = OrderedDict()
         _json['color'] = COLOR
         _json['author_name'] = '조식'
@@ -64,6 +65,7 @@ def get_menu(date, when):
         _attachment.append(_json)
 
     elif when in {'lunch', '점심', '중식'}:
+        data = database.select(date)
         _json = OrderedDict()
         _json['color'] = COLOR
         _json['author_name'] = '중식 A코너'
@@ -86,6 +88,7 @@ def get_menu(date, when):
         _attachment.append(_json)
 
     elif when in {'dinner', '저녁', '석식'}:
+        data = database.select(date)
         _json = OrderedDict()
         _json['color'] = COLOR
         _json['author_name'] = '석식'
@@ -127,13 +130,15 @@ def logging(msg):
             file_object.write("\n")
         # Append text at the end of file
         date = time.strftime('[%Y-%m-%d %H:%M:%S]', time.localtime())
-        file_object.write('{date} {msg}'.format(date=date, msg=msg))
+        log = '{date} {msg}'.format(date=date, msg=msg)
+        file_object.write(log)
+        usage.update(log)
 
 
 def work():
     schedule.every().day.at("07:30").do(downloader.download_month)
 
-    downloader.download_month()
+    # downloader.download_month()
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -168,10 +173,10 @@ def post():
         logging('json={}'.format(request.json))
         when = request.json['text']
 
-    date = datetime.datetime.today().strftime("%Y%m%d")
+    date = datetime.datetime.today().strftime("%Y-%m-%d")
     if is_tomorrow(when):
         date = datetime.date.today() + datetime.timedelta(days=1)
-        date = date.strftime("%Y%m%d")
+        date = date.strftime("%Y-%m-%d")
         if len(subtract_tomorrow(when)) > 0:
             when = subtract_tomorrow(when)
         else:
@@ -186,8 +191,8 @@ def post():
     _json['response_type'] = 'in_channel'
     _json['text'] = '판교세븐벤처밸리 {year}년 {month}월 {day}일'.format(
         year=date[:4],
-        month=date[4:6],
-        day=date[6:])
+        month=date[5:7],
+        day=date[8:])
     _json['attachments'] = menu
 
     return _json

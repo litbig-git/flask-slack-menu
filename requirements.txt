@@ -17,3 +17,4 @@ sortedcontainers==2.4.0
 urllib3==1.26.7
 Wand==0.6.7
 Werkzeug==2.0.2
+PyMySQL~=1.0.2
