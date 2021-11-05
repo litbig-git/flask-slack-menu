@@ -5,6 +5,7 @@ import sys
 
 import pdfplumber
 import pymysql
+from collections import defaultdict
 
 
 class Database:
@@ -20,7 +21,7 @@ class Database:
 
     USER = os.environ['RDS_USER']
     PASSWD = os.environ['RDS_PASSWD']
-    HOST = 'database-menu-instance-1.chypan0rbkuk.ap-northeast-2.rds.amazonaws.com'
+    HOST = 'database-mysql.chypan0rbkuk.ap-northeast-2.rds.amazonaws.com'
     PORT = 3306
     CHARSET = 'utf8'
     DB = 'menu'
@@ -118,7 +119,8 @@ class Database:
 
     def order(self):
         with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
-            conn.execute('SELECT * FROM {table} ORDER BY {primary_key}'.format(table=self.TABLE, primary_key=self.DATE))
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute('SELECT * FROM {table} ORDER BY {primary_key}'.format(table=self.TABLE, primary_key=self.DATE))
 
 
 def list_up_menu():
@@ -138,7 +140,7 @@ def list_up_menu():
             # print('row={}'.format(row))
 
             for weekday in range(0, 5):
-                _menu = dict()
+                _menu = defaultdict(str)
                 _menu[Database.DATE] = '{year}{month_day}'.format(
                     year='%d' % datetime.datetime.today().year,
                     month_day=re.sub(r'[^0-9]', '', table[0][2 + weekday])
@@ -176,6 +178,13 @@ def database_update_all():
     db = Database()
     for _menu in list_up_menu():
         db.update(_menu) if db.select(_menu[Database.DATE]) else db.insert(_menu)
+    db.order()
+
+
+def database_migrate(data_list: list[dict]):
+    db = Database()
+    for data in data_list:
+        db.update(data) if db.select(data[Database.DATE]) else db.insert(data)
     db.order()
 
 
