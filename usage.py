@@ -80,7 +80,7 @@ class Database:
                 '''.format(table=self.TABLE)
                 cursor.execute(sql)
                 ret = cursor.fetchall()
-                print('select={}'.format(ret))
+                #print('select={}'.format(ret))
                 return ret
 
     def insert(self, model: dict):
@@ -208,7 +208,7 @@ def update(line: str):
     db.update(values) if db.select(values[Database.DT]) else db.insert(values)
 
 
-def migrate(data_list: list[dict]):
+def migrate(data_list):
     db = Database()
     for data in data_list:
         db.update(data) if db.select(data[Database.DT]) else db.insert(data)

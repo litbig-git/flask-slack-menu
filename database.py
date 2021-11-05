@@ -56,7 +56,7 @@ class Database:
                 '''.format(table=self.TABLE)
                 cursor.execute(sql, date)
                 ret = cursor.fetchone()
-                print('select={}'.format(ret))
+                #print('select={}'.format(ret))
                 return ret
 
     def select_all(self):
@@ -183,7 +183,7 @@ def database_update_all():
     db.order()
 
 
-def database_migrate(data_list: list[dict]):
+def database_migrate(data_list):
     db = Database()
     for data in data_list:
         db.update(data) if db.select(data[Database.DATE]) else db.insert(data)
