@@ -28,7 +28,7 @@ class Database:
 
     USER = os.environ['RDS_USER']
     PASSWD = os.environ['RDS_PASSWD']
-    HOST = 'database-menu-instance-1.chypan0rbkuk.ap-northeast-2.rds.amazonaws.com'
+    HOST = 'database-mysql.chypan0rbkuk.ap-northeast-2.rds.amazonaws.com'
     PORT = 3306
     CHARSET = 'utf8'
     DB = 'menu'
@@ -150,7 +150,8 @@ class Database:
 
     def order(self):
         with pymysql.connect(user=self.USER, passwd=self.PASSWD, host=self.HOST, port=self.PORT, db=self.DB) as conn:
-            conn.execute('SELECT * FROM {table} ORDER BY {primary_key}'.format(table=self.TABLE, primary_key=self.DT))
+            with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute('SELECT * FROM {table} ORDER BY {primary_key}'.format(table=self.TABLE, primary_key=self.DT))
 
 
 def update_all(file_name: str):
@@ -203,6 +204,13 @@ def update(line: str):
     values[Database.DT] = dt
 
     db.update(values) if db.select(values[Database.DT]) else db.insert(values)
+
+
+def migrate(data_list: list[dict]):
+    db = Database()
+    for data in data_list:
+        db.update(data) if db.select(data[Database.DT]) else db.insert(data)
+    db.order()
 
 
 if __name__ == '__main__':
