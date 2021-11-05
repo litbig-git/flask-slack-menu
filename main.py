@@ -81,11 +81,12 @@ def get_menu(date, when):
         _json['author_name'] = '중식 김치&샐러드'
         _json['text'] = data[Database.LUNCH_SIDE]
         _attachment.append(_json)
-        _json = OrderedDict()
-        _json['color'] = COLOR
-        _json['author_name'] = '중식 SALAD BOX'
-        _json['text'] = data[Database.LUNCH_SALAD]
-        _attachment.append(_json)
+        if data[Database.LUNCH_SALAD]:
+            _json = OrderedDict()
+            _json['color'] = COLOR
+            _json['author_name'] = '중식 SALAD BOX'
+            _json['text'] = data[Database.LUNCH_SALAD]
+            _attachment.append(_json)
 
     elif when in {'dinner', '저녁', '석식'}:
         data = database.select(date)
