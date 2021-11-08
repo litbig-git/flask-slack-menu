@@ -225,10 +225,7 @@ if __name__ == '__main__':
     cmd = arg[0]
     db = Database()
 
-    if cmd == 'update_all':
-        update_all('log.txt')
-
-    elif cmd == 'select':
+    if cmd == 'select':
         db.select('2021-11-03 17:41:10')
 
     elif cmd == 'delete_all':
