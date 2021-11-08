@@ -124,18 +124,9 @@ def get_menu(date, when):
 
 
 def logging(msg):
-    with open("log.txt", "a+") as file_object:
-        # Move read cursor to the start of file.
-        file_object.seek(0)
-        # If file is not empty then append '\n'
-        data = file_object.read(100)
-        if len(data) > 0:
-            file_object.write("\n")
-        # Append text at the end of file
-        date = time.strftime('[%Y-%m-%d %H:%M:%S]', time.localtime())
-        log = '{date} {msg}'.format(date=date, msg=msg)
-        file_object.write(log)
-        usage.update(log)
+    date = time.strftime('[%Y-%m-%d %H:%M:%S]', time.localtime())
+    log = '{date} {msg}'.format(date=date, msg=msg)
+    usage.update(log)
 
 
 def work():
