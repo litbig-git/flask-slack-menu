@@ -139,7 +139,7 @@ def list_up_menu():
             table = first_page.extract_table()
 
             row = len(table)
-            # print('row={}'.format(row))
+            # print('================row={}'.format(row))
 
             for weekday in range(0, 5):
                 _menu = defaultdict(str)
@@ -154,18 +154,18 @@ def list_up_menu():
 
                     a = table[r][0].replace('\n', '').replace(' ', '').upper() if table[r][0] is not None else ''
                     b = table[r][1].replace('\n', '').replace(' ', '').upper() if table[r][1] is not None else ''
-                    # print('a={}, b={}'.format(a, b))
-                    if a == '조식' or b == '한식':
+                    # print('r={}, a={}, b={}, value={}'.format(r, a, b, value))
+                    if r == 1 or a == '조식' or b == '한식':
                         _menu[Database.BREAKFAST] = value
-                    elif b == 'A코너':
+                    elif r == 2 or b == 'A코너':
                         _menu[Database.LUNCH_A] = value
-                    elif b == 'B코너':
+                    elif r == 3 or b == 'B코너':
                         _menu[Database.LUNCH_B] = value
-                    elif b in {'김치&샐러드', 'SALADBAR', '플러스코너'}:
+                    elif r == 4 or b in {'김치&샐러드', 'SALADBAR', '플러스코너'}:
                         _menu[Database.LUNCH_SIDE] = value
                     elif a == '중식' or b == 'SALADBOX':
                         _menu[Database.LUNCH_SALAD] = value
-                    elif a == '석식':
+                    elif r == 5 or a == '석식':
                         _menu[Database.DINNER] = value
 
                 # print('_menu={}'.format(_menu))
