@@ -147,6 +147,7 @@ def list_up_menu():
                     year='%d' % datetime.datetime.today().year,
                     month_day=re.sub(r'[^0-9]', '', table[0][2 + weekday])
                 )
+                # print('\n>>>DATE={}'.format(_menu[Database.DATE]))
                 for r in range(1, row):
                     value = table[r][2 + weekday]
                     if value is None or len(value) == 0:
@@ -155,18 +156,24 @@ def list_up_menu():
                     a = table[r][0].replace('\n', '').replace(' ', '').upper() if table[r][0] is not None else ''
                     b = table[r][1].replace('\n', '').replace(' ', '').upper() if table[r][1] is not None else ''
                     # print('r={}, a={}, b={}, value={}'.format(r, a, b, value))
-                    if r == 1 or a == '조식' or b == '한식':
+                    if '조식' in a or '한식' in b:
                         _menu[Database.BREAKFAST] = value
-                    elif r == 2 or b == 'A코너':
+                        # print('>>>BREAKFAST={}'.format(value))
+                    elif 'A코너' in b:
                         _menu[Database.LUNCH_A] = value
-                    elif r == 3 or b == 'B코너':
+                        # print('>>>LUNCH_A={}'.format(value))
+                    elif 'B코너' in b:
                         _menu[Database.LUNCH_B] = value
-                    elif r == 4 or b in {'김치&샐러드', 'SALADBAR', '플러스코너'}:
+                        # print('>>>LUNCH_B={}'.format(value))
+                    elif b in {'김치&샐러드', 'SALADBAR', '플러스코너'}:
                         _menu[Database.LUNCH_SIDE] = value
-                    elif a == '중식' or b == 'SALADBOX':
+                        # print('>>>LUNCH_SIDE={}'.format(value))
+                    elif 'SALADBOX' in b:
                         _menu[Database.LUNCH_SALAD] = value
-                    elif r == 5 or a == '석식':
+                        # print('>>>LUNCH_SALAD={}'.format(value))
+                    elif '석식' in a:
                         _menu[Database.DINNER] = value
+                        # print('>>>DINNER={}'.format(value))
 
                 # print('_menu={}'.format(_menu))
                 # print('len(_menu)={}'.format(len(_menu)))
