@@ -12,6 +12,8 @@ path = './menu'
 pvv_head = 'http://www.pvv.co.kr/bbs/download.php?bbsMode=fileDown&code=bbs_menu01'
 pvv_id = 569
 
+# https://github.com/jsvine/pdfplumber
+
 
 def is2021(_pdf_file):
     try:

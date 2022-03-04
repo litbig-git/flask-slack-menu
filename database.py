@@ -224,3 +224,7 @@ if __name__ == '__main__':
 
     elif cmd == 'order':
         db.order()
+
+    elif cmd == 'listup':
+        for _menu in list_up_menu():
+            print(_menu)

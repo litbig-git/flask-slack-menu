@@ -9,6 +9,7 @@ import downloader
 import usage
 from database import Database
 import time
+from block import Block
 
 COLOR = '#ffce30'
 
@@ -53,74 +54,57 @@ def subtract_tomorrow(when: str):
     return ret
 
 
-# https://github.com/jsvine/pdfplumber
-def get_menu(date, when):
-    database = Database()
-    _attachment = list()
+database = Database()
+block = Block()
+
+
+# https://app.slack.com/block-kit-builder
+def get_block(date: datetime, when, db: Database, is_header: bool = True):
+    data = db.select(date.strftime("%Y-%m-%d"))
+
+    _json = list()
+
+    if data is None:
+        _json += block.get_header(date, "메뉴가 없어요 :(")
+        return _json
+
+    if is_header:
+        _json += block.get_header(date, "요청하신 메뉴를 알려드릴게요 :)")
 
     if when in {'breakfast', '아침', '조식'}:
-        data = database.select(date)
-        _json = OrderedDict()
-        _json['color'] = COLOR
-        _json['author_name'] = '조식'
-        _json['text'] = data[Database.BREAKFAST]
-        _attachment.append(_json)
+        _json += block.get_divider()
+        _json += block.get_menu("bread", "아침", data[Database.BREAKFAST])
 
     elif when in {'lunch', '점심', '중식'}:
-        data = database.select(date)
-        _json = OrderedDict()
-        _json['color'] = COLOR
-        _json['author_name'] = '중식 A코너'
-        _json['text'] = data[Database.LUNCH_A]
-        _attachment.append(_json)
-        _json = OrderedDict()
-        _json['color'] = COLOR
-        _json['author_name'] = '중식 B코너'
-        _json['text'] = data[Database.LUNCH_B]
-        _attachment.append(_json)
-        _json = OrderedDict()
-        _json['color'] = COLOR
-        _json['author_name'] = '중식 김치&샐러드'
-        _json['text'] = data[Database.LUNCH_SIDE]
-        _attachment.append(_json)
-        if data[Database.LUNCH_SALAD]:
-            _json = OrderedDict()
-            _json['color'] = COLOR
-            _json['author_name'] = '중식 SALAD BOX'
-            _json['text'] = data[Database.LUNCH_SALAD]
-            _attachment.append(_json)
+        _json += block.get_divider()
+        _json += block.get_menu("spaghetti", "점심 A코너", data[Database.LUNCH_A])
+        _json += block.get_menu("rice", "점심 B코너", data[Database.LUNCH_B])
+        _json += block.get_menu("leafy_green", "김치&샐러드", data[Database.LUNCH_SIDE])
+        _json += block.get_menu("green_salad", "SALAD BOX", data[Database.LUNCH_SALAD])
 
     elif when in {'dinner', '저녁', '석식'}:
-        data = database.select(date)
-        _json = OrderedDict()
-        _json['color'] = COLOR
-        _json['author_name'] = '석식'
-        _json['text'] = data[Database.DINNER]
-        _attachment.append(_json)
+        _json += block.get_divider()
+        _json += block.get_menu("beer", "저녁", data[Database.DINNER])
 
     elif when in {'today', '오늘'}:
-        for _menu in get_menu(date, 'breakfast'):
-            _attachment.append(_menu)
-        for _menu in get_menu(date, 'lunch'):
-            _attachment.append(_menu)
-        for _menu in get_menu(date, 'dinner'):
-            _attachment.append(_menu)
+        _json += get_block(date, 'breakfast', db, False)
+        _json += get_block(date, 'lunch', db, False)
+        _json += get_block(date, 'dinner', db, False)
 
     else:
-        _json = OrderedDict()
-        _json['color'] = COLOR
-        _json['author_name'] = '올바른 [when]을 입력해주세요.'
-        _json['text'] = 'breakfast, 아침, 조식\n' \
-                        'lunch, 점심, 중식\n' \
-                        'dinner, 저녁, 석식\n' \
-                        'today, 오늘\n' \
-                        'tomorrow, 내일\n' \
-                        'tomorrow breakfast, 내일 아침\n' \
-                        'tomorrow lunch, 내일 점심\n' \
-                        'tomorrow dinner, 내일 저녁'
-        _attachment.append(_json)
+        _json.clear()
+        _json += block.get_header(date, "올바른 [when]을 입력해주세요 :(")
+        _json += block.get_divider()
+        _json += block.get_menu("bread", "breakfast, 아침, 조식")
+        _json += block.get_menu("spaghetti", "lunch, 점심, 중식")
+        _json += block.get_menu("beer", "dinner, 저녁, 석식")
+        _json += block.get_menu("pizza", "today, 오늘")
+        _json += block.get_menu("fries", "tomorrow, 내일")
+        _json += block.get_menu("fried_shrimp", "tomorrow breakfast, 내일 아침")
+        _json += block.get_menu("fried_egg", "tomorrow lunch, 내일 점심")
+        _json += block.get_menu("sandwich", "tomorrow dinner, 내일 저녁")
 
-    return _attachment
+    return _json
 
 
 def logging(msg):
@@ -167,10 +151,10 @@ def post():
         logging('json={}'.format(request.json))
         when = request.json['text']
 
-    date = datetime.datetime.today().strftime("%Y-%m-%d")
+    date = datetime.datetime.today()
     if is_tomorrow(when):
-        date = datetime.date.today() + datetime.timedelta(days=1)
-        date = date.strftime("%Y-%m-%d")
+        date += datetime.timedelta(days=1)
+
         if len(subtract_tomorrow(when)) > 0:
             when = subtract_tomorrow(when)
         else:
@@ -178,16 +162,12 @@ def post():
     elif is_today(when) and len(subtract_today(when)) > 0:
         when = subtract_today(when)
 
-    print('date={date}, when={when}'.format(date=date, when=when))
-    menu = get_menu(date, when)
+    print('date={date}, when={when}'.format(date=date.strftime("%Y-%m-%d"), when=when))
+    menu = get_block(date, when, database)
 
     _json = OrderedDict()
     _json['response_type'] = 'in_channel'
-    _json['text'] = '판교세븐벤처밸리 {year}년 {month}월 {day}일'.format(
-        year=date[:4],
-        month=date[5:7],
-        day=date[8:])
-    _json['attachments'] = menu
+    _json['blocks'] = menu
 
     return _json
 
