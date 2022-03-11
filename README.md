@@ -4,7 +4,7 @@
 
 ## 예시
 
-<img src="https://github.com/alsrb968/slack_menu_bot/blob/master/img/img1.png" width="30%" height="30%" title="오늘" alt="오늘"/>
+![title](https://github.com/alsrb968/slack_menu_bot/blob/master/img/img1.png)
 
 ## flask 실행하기
 
