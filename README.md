@@ -4,9 +4,7 @@
 
 ## 예시
 
-<p align="center">
 <img src="https://github.com/alsrb968/slack_menu_bot/blob/master/img/img1.png" width="30%" height="30%" title="오늘" alt="오늘"/>
-</p>
 
 ## flask 실행하기
 
