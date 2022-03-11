@@ -4,6 +4,7 @@ import os.path
 from urllib.request import urlopen
 import requests
 from bs4 import BeautifulSoup
+import database
 
 id_file = 'id.txt'
 
@@ -91,6 +92,7 @@ def periodical_download():
 
         if file_name is None or not file_name:
             break
+    database.database_update_all()
 
 
 if __name__ == '__main__':
