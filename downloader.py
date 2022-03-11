@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+import time
 from urllib.request import urlopen
 import requests
 from bs4 import BeautifulSoup
@@ -92,6 +93,7 @@ def periodical_download():
 
         if file_name is None or not file_name:
             break
+        time.sleep(1)
     database.database_update_all()
 
 
