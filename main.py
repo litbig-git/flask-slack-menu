@@ -114,9 +114,9 @@ def logging(msg):
 
 
 def work():
-    schedule.every().day.at("07:30").do(downloader.download_month)
+    schedule.every().day.at("06:00").do(downloader.periodical_download)
 
-    # downloader.download_month()
+    downloader.periodical_download()
     while True:
         schedule.run_pending()
         time.sleep(1)
