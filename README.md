@@ -2,6 +2,9 @@
 
 판교세븐벤처밸리 식당 메뉴 알려주기
 
+<img src="https://img.shields.io/badge/SLACK-4A154B?style=for-the-badge&logo=slack&logoColor=white"> <img src="https://img.shields.io/badge/PYTHON-3776AB?style=for-the-badge&logo=python&logoColor=white"> <img src="https://img.shields.io/badge/FLASK-000000?style=for-the-badge&logo=flask&logoColor=white"> <img src="https://img.shields.io/badge/AMAZON_AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white"> <img src="https://img.shields.io/badge/MYSQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
+
+
 ## 예시
 
 ![title](https://github.com/alsrb968/slack_menu_bot/blob/master/img/img1.png)
