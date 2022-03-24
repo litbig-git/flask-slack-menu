@@ -174,6 +174,9 @@ def list_up_menu():
                     elif '석식' in a:
                         _menu[Database.DINNER] = value
                         # print('>>>DINNER={}'.format(value))
+                    else:
+                        _menu[Database.DINNER] += '\n' + value
+                        # print('>>>UNKNOWN={}'.format(value))
 
                 # print('_menu={}'.format(_menu))
                 # print('len(_menu)={}'.format(len(_menu)))

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+import sys
 import time
 from urllib.request import urlopen
 import requests
@@ -86,6 +87,16 @@ def download_pdf(pvv_id) -> str:
     return file_name
 
 
+def periodical_download_only():
+    init_id()
+    while True:
+        file_name = download_pdf(get_id())
+
+        if file_name is None or not file_name:
+            break
+        time.sleep(1)
+
+
 def periodical_download():
     init_id()
     while True:
@@ -98,4 +109,15 @@ def periodical_download():
 
 
 if __name__ == '__main__':
-    periodical_download()
+    arg = sys.argv
+    del arg[0]
+    print('arg = {}'.format(arg))
+    if len(arg) == 0:
+        exit(-1)
+
+    cmd = arg[0]
+
+    if cmd == 'download_only':
+        periodical_download_only()
+    elif cmd == 'download':
+        periodical_download()
