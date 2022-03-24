@@ -158,25 +158,27 @@ def list_up_menu():
                     # print('r={}, a={}, b={}, value={}'.format(r, a, b, value))
                     if '조식' in a or '한식' in b:
                         _menu[Database.BREAKFAST] = value
-                        # print('>>>BREAKFAST={}'.format(value))
+                        # print('>>>BREAKFAST={}'.format(_menu[Database.BREAKFAST]))
                     elif 'A코너' in b:
                         _menu[Database.LUNCH_A] = value
-                        # print('>>>LUNCH_A={}'.format(value))
+                        # print('>>>LUNCH_A={}'.format(_menu[Database.LUNCH_A]))
                     elif 'B코너' in b:
                         _menu[Database.LUNCH_B] = value
-                        # print('>>>LUNCH_B={}'.format(value))
+                        # print('>>>LUNCH_B={}'.format(_menu[Database.LUNCH_B]))
                     elif b in {'김치&샐러드', 'SALADBAR', '플러스코너'}:
                         _menu[Database.LUNCH_SIDE] = value
-                        # print('>>>LUNCH_SIDE={}'.format(value))
+                        # print('>>>LUNCH_SIDE={}'.format(_menu[Database.LUNCH_SIDE]))
                     elif 'SALADBOX' in b:
                         _menu[Database.LUNCH_SALAD] = value
-                        # print('>>>LUNCH_SALAD={}'.format(value))
+                        # print('>>>LUNCH_SALAD={}'.format(_menu[Database.LUNCH_SALAD]))
                     elif '석식' in a:
                         _menu[Database.DINNER] = value
-                        # print('>>>DINNER={}'.format(value))
-                    else:
+                        # print('>>>DINNER={}'.format(_menu[Database.DINNER]))
+                    elif 'TAKEOUT' in a:
+                        print('>>>TAKEOUT={}'.format(value))
+                    elif '이용가능' not in value:
                         _menu[Database.DINNER] += '\n' + value
-                        # print('>>>UNKNOWN={}'.format(value))
+                        # print('>>>DINNER={}'.format(_menu[Database.DINNER]))
 
                 # print('_menu={}'.format(_menu))
                 # print('len(_menu)={}'.format(len(_menu)))
