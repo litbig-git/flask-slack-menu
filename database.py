@@ -159,8 +159,11 @@ def list_up_menu():
                     if '조식' in a or '한식' in b:
                         _menu[Database.BREAKFAST] = value
                         # print('>>>BREAKFAST={}'.format(_menu[Database.BREAKFAST]))
-                    elif 'A코너' in b:
-                        _menu[Database.LUNCH_A] = value
+                    elif 'A코너' in b or r == 2:
+                        if len(_menu[Database.LUNCH_A]) == 0:
+                            _menu[Database.LUNCH_A] = value
+                        else:
+                            _menu[Database.LUNCH_A] += value
                         # print('>>>LUNCH_A={}'.format(_menu[Database.LUNCH_A]))
                     elif 'B코너' in b:
                         _menu[Database.LUNCH_B] = value
