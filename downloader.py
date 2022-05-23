@@ -36,14 +36,14 @@ def inc_id():
 def init_id():
     if not os.path.exists(id_file) or os.path.getsize(id_file) < 1:
         print('no file')
-        set_id(600)
+        set_id(612)
 
 
 # pvv_id
 # 2020년 488 ~ 539
 # 2021년 540 ~ 591
 # 2022년 592 ~
-def download_pdf(pvv_id) -> str:
+def download_pdf(pvv_id):
     path = './menu'
     pvv_head = 'http://www.pvv.co.kr/bbs/'
     html = urlopen(pvv_head + 'bbsView.php?id={id}&page=1&code=bbs_menu01'.format(id=pvv_id))
@@ -53,9 +53,7 @@ def download_pdf(pvv_id) -> str:
     start, end = js_code.rfind('download.php?bbsMode=fileDown'), js_code.rfind('.pdf"')
     if start < 0 or end < 0:
         print('게시글이 없습니다.')
-        return ''
-    else:
-        inc_id()
+        return None, pvv_id
 
     file_link = js_code[start:end + 4]
 
@@ -84,25 +82,29 @@ def download_pdf(pvv_id) -> str:
     pdf_file = open(pdf_file_path, 'wb')
     pdf_file.write(r.content)
 
-    return file_name
+    return file_name, pvv_id + 1
 
 
 def periodical_download_only():
     init_id()
+    id_num = get_id()
     while True:
-        file_name = download_pdf(get_id())
+        file_name, id_num = download_pdf(id_num)
 
         if file_name is None or not file_name:
+            set_id(id_num)
             break
         time.sleep(1)
 
 
 def periodical_download():
     init_id()
+    id_num = get_id()
     while True:
-        file_name = download_pdf(get_id())
+        file_name, id_num = download_pdf(id_num)
 
         if file_name is None or not file_name:
+            set_id(id_num)
             break
         time.sleep(1)
     database.database_update_all()
