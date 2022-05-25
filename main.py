@@ -60,7 +60,7 @@ block = Block()
 
 # https://app.slack.com/block-kit-builder
 def get_block(date: datetime, when, db: Database, is_header: bool = True):
-    data = db.select(date.strftime("%Y-%m-%d"))
+    data = db.select(date.strftime("%Y%m%d"))
 
     _json = list()
 
@@ -162,7 +162,7 @@ def post():
     elif is_today(when) and len(subtract_today(when)) > 0:
         when = subtract_today(when)
 
-    print('date={date}, when={when}'.format(date=date.strftime("%Y-%m-%d"), when=when))
+    print('date={date}, when={when}'.format(date=date.strftime("%Y%m%d"), when=when))
     menu = get_block(date, when, database)
 
     _json = OrderedDict()
