@@ -23,7 +23,7 @@ class Database:
 
     USER = os.environ['RDS_USER']
     PASSWD = os.environ['RDS_PASSWD']
-    HOST = 'database-mysql.chypan0rbkuk.ap-northeast-2.rds.amazonaws.com'
+    HOST = 'slack-menu-bot-mysql.cuxm8ahfs8s9.ap-northeast-2.rds.amazonaws.com'
     PORT = 3306
     CHARSET = 'utf8'
     DB = 'menu'
